@@ -1,0 +1,71 @@
+﻿<Window x:Class="GK_Proj_3.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:GK_Proj_3"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="600" Width="1000">
+    
+    <Window.DataContext>
+        <local:MainViewModel/>
+    </Window.DataContext>
+    
+    <Grid Background="LightGray">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="6*"/>
+            <RowDefinition Height="4*"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Canvas x:Name="MainCanvas" Grid.Column="0" Margin="5" Background="White"/>
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <StackPanel Orientation="Vertical" HorizontalAlignment="Left">
+                    <Button x:Name="toGreyScaleButton" Content="To Greyscale" Width="120" Height="20" Margin="5"/>
+                    <Button x:Name="loadImageButton" Content="Load Image" Width="120" Height="20" Margin="5" Click="loadImageButton_Click"/>
+                    <ComboBox Margin="5" ItemsSource="{Binding ComboBoxItems}" DisplayMemberPath="DisplayName" SelectedItem="{Binding SelectedItem}"/>
+                    <Button x:Name="seperateChannelsButton" Content="Seperate Channels" Width="120" Height="20" Margin="5"/>
+                </StackPanel>
+            </Grid>
+        </Grid>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="9*"/>
+                </Grid.RowDefinitions>
+                <Label x:Name="Child1Label" Content="{Binding SelectedItem.Label1Value}" FontSize="11" FontWeight="Bold" Grid.Row="0"/>
+                <Canvas x:Name="Child1Cavas" Grid.Row="1" Background="White" Margin="5"/>
+            </Grid>
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="9*"/>
+                </Grid.RowDefinitions>
+                <Label x:Name="Child2Label" Content="{Binding SelectedItem.Label2Value}" FontSize="11" FontWeight="Bold" Grid.Row="0"/>
+                <Canvas x:Name="Child2Cavas" Grid.Row="1" Background="White" Margin="5"/>
+            </Grid>
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="9*"/>
+                </Grid.RowDefinitions>
+                <Label x:Name="Child3Label" Content="{Binding SelectedItem.Label3Value}" FontSize="11" FontWeight="Bold" Grid.Row="0"/>
+                <Canvas x:Name="Child3Cavas" Grid.Row="1" Background="White" Margin="5"/>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>
