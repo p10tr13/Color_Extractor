@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GK_Proj_3"
         mc:Ignorable="d"
-        Title="MainWindow" Height="600" Width="1000">
+        Height="600" Width="1000" ResizeMode="NoResize" Title="Color Extractor">
     
     <Window.DataContext>
         <local:MainViewModel/>
@@ -25,15 +25,95 @@
             <Canvas x:Name="MainCanvas" Grid.Column="0" Margin="5" Background="White"/>
             <Grid Grid.Column="1">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="3*"/>
+                    <RowDefinition Height="5*"/>
                 </Grid.RowDefinitions>
-                <StackPanel Orientation="Vertical" HorizontalAlignment="Left">
+                <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Grid.Row="0">
                     <Button x:Name="toGreyScaleButton" Content="To Greyscale" Width="120" Height="20" Margin="5"/>
                     <Button x:Name="loadImageButton" Content="Load Image" Width="120" Height="20" Margin="5" Click="loadImageButton_Click"/>
-                    <ComboBox Margin="5" ItemsSource="{Binding ComboBoxItems}" DisplayMemberPath="DisplayName" SelectedItem="{Binding SelectedItem}"/>
-                    <Button x:Name="seperateChannelsButton" Content="Seperate Channels" Width="120" Height="20" Margin="5"/>
+                    <ComboBox x:Name="ModelComboBox" Margin="5" ItemsSource="{Binding ComboBoxItems}" DisplayMemberPath="DisplayName" SelectedItem="{Binding SelectedItem}"/>
+                    <Button x:Name="seperateChannelsButton" Content="Seperate Channels" Width="120" Height="20" Margin="5" Click="seperateChannelsButton_Click"/>
                 </StackPanel>
+                <GroupBox Header="Lab Settings" Grid.Row="1" Padding="5">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid Grid.Row="0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Text="Predefined color profile" VerticalAlignment="Center" />
+                            <ComboBox x:Name="ColorProfileComboBox" Grid.Column="1" Margin="5" SelectionChanged="ColorProfileComboBox_SelectionChanged">
+                                <ComboBoxItem Content="sRGB"/>
+                                <ComboBoxItem Content="Adobe RGB"/>
+                                <ComboBoxItem Content="Apple RGB"/>
+                                <ComboBoxItem Content="CIE RGB"/>
+                            </ComboBox>
+
+                            <TextBlock Text="Predefined illuminant" Grid.Row="1" VerticalAlignment="Center"/>
+                            <ComboBox x:Name="IlluminantComboBox" Grid.Column="1" Grid.Row="1" Margin="5" SelectionChanged="IlluminantComboBox_SelectionChanged">
+                                <ComboBoxItem Content="A"/>
+                                <ComboBoxItem Content="B"/>
+                                <ComboBoxItem Content="C"/>
+                                <ComboBoxItem Content="D50"/>
+                                <ComboBoxItem Content="D55"/>
+                                <ComboBoxItem Content="D65"/>
+                                <ComboBoxItem Content="D75"/>
+                                <ComboBoxItem Content="9300K"/>
+                                <ComboBoxItem Content="E"/>
+                                <ComboBoxItem Content="F2"/>
+                                <ComboBoxItem Content="F7"/>
+                                <ComboBoxItem Content="F11"/>
+                            </ComboBox>
+                        </Grid>
+                        <Grid Grid.Row="1">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                           
+                            <TextBlock Text="Chromacity" Grid.Column="0" Grid.Row="0" HorizontalAlignment="Center"/>
+                            <TextBlock Text="x" Grid.Column="1" Grid.Row="0" HorizontalAlignment="Center"/>
+                            <TextBlock Text="y" Grid.Column="2" Grid.Row="0" HorizontalAlignment="Center"/>
+
+                            <TextBlock Text="Red primary" Grid.Column="0" Grid.Row="1" HorizontalAlignment="Center"/>
+                            <TextBox x:Name="xRedTextBox" Text="0,64" Grid.Column="1" Grid.Row="1" Margin="1"/>
+                            <TextBox x:Name="yRedTextBox" Text="0,33" Grid.Column="2" Grid.Row="1" Margin="1"/>
+
+                            <TextBlock Text="Green primary" Grid.Column="0" Grid.Row="2" HorizontalAlignment="Center"/>
+                            <TextBox x:Name="xGreenTextBox" Text="0,3" Grid.Column="1" Grid.Row="2" Margin="1"/>
+                            <TextBox x:Name="yGreenTextBox" Text="0,6" Grid.Column="2" Grid.Row="2" Margin="1"/>
+
+                            <TextBlock Text="Blue primary" Grid.Column="0" Grid.Row="3" HorizontalAlignment="Center"/>
+                            <TextBox x:Name="xBlueTextBox" Text="0,15" Grid.Column="1" Grid.Row="3" Margin="1"/>
+                            <TextBox x:Name="yBlueTextBox" Text="0,06" Grid.Column="2" Grid.Row="3" Margin="1"/>
+
+                            <TextBlock Text="White point" Grid.Column="0" Grid.Row="4" HorizontalAlignment="Center"/>
+                            <TextBox x:Name="xWhitePointTextBox" Text="0,31273" Grid.Column="1" Grid.Row="4" Margin="1"/>
+                            <TextBox x:Name="yWhitePointTextBox" Text="0,32902" Grid.Column="2" Grid.Row="4" Margin="1"/>
+
+                            <TextBlock Text="Gamma" Grid.Column="1" Grid.Row="5" HorizontalAlignment="Center"/>
+                            <TextBox x:Name="GammaTextBox" Text="2,2" Grid.Column="2" Grid.Row="5" Margin="1"/>
+                        </Grid>
+                    </Grid>
+                </GroupBox>
             </Grid>
         </Grid>
         <Grid Grid.Row="1">
@@ -56,7 +136,7 @@
                     <RowDefinition Height="9*"/>
                 </Grid.RowDefinitions>
                 <Label x:Name="Child2Label" Content="{Binding SelectedItem.Label2Value}" FontSize="11" FontWeight="Bold" Grid.Row="0"/>
-                <Canvas x:Name="Child2Cavas" Grid.Row="1" Background="White" Margin="5"/>
+                <Canvas x:Name="Child2Cavas" Grid.Row="1" Background="White" Margin="5" />
             </Grid>
             <Grid Grid.Column="2">
                 <Grid.RowDefinitions>

@@ -15,6 +15,11 @@ namespace GK_Proj_3
         public string Label1Value { get; set; }
         public string Label2Value { get; set; }
         public string Label3Value { get; set; }
+
+        public override string ToString()
+        {
+            return DisplayName;
+        }
     }
 
     public class MainViewModel : INotifyPropertyChanged
