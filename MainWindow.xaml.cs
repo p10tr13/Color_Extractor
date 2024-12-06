@@ -265,12 +265,32 @@ namespace GK_Proj_3
             float zG = 1 - xG - yG;
             float zB = 1 - xB - yB;
 
+            //Matrix4x4 matrix = new Matrix4x4()
+            //{
+            //    M11 = xR/yR, M12 = xG/yG, M13 = xB/yB, M14 = 0,
+            //    M21 = 1, M22 = 1, M23 = 1, M24 = 0,
+            //    M31 = zR/yR, M32 = zG/yG, M33 = zB/yB, M34 = 0,
+            //    M41 = 0, M42 = 0, M43 = 0, M44 = 1
+            //};
+
             Matrix4x4 matrix = new Matrix4x4()
             {
-                M11 = xR/yR, M12 = xG/yG, M13 = xB/yB, M14 = 0,
-                M21 = 1, M22 = 1, M23 = 1, M24 = 0,
-                M31 = zR/yR, M32 = zG/yG, M33 = zB/yB, M34 = 0,
-                M41 = 0, M42 = 0, M43 = 0, M44 = 1
+                M11 = xR,
+                M12 = xG,
+                M13 = xB,
+                M14 = 0,
+                M21 = yR,
+                M22 = yG,
+                M23 = yB,
+                M24 = 0,
+                M31 = zR,
+                M32 = zG,
+                M33 = zB,
+                M34 = 0,
+                M41 = 0,
+                M42 = 0,
+                M43 = 0,
+                M44 = 1
             };
 
 
