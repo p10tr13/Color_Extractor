@@ -29,7 +29,7 @@
                     <RowDefinition Height="5*"/>
                 </Grid.RowDefinitions>
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Grid.Row="0">
-                    <Button x:Name="toGreyScaleButton" Content="To Greyscale" Width="120" Height="20" Margin="5"/>
+                    <Button x:Name="toGreyScaleButton" Content="To Greyscale" Width="120" Height="20" Margin="5" IsEnabled="False"/>
                     <Button x:Name="loadImageButton" Content="Load Image" Width="120" Height="20" Margin="5" Click="loadImageButton_Click"/>
                     <ComboBox x:Name="ModelComboBox" Margin="5" ItemsSource="{Binding ComboBoxItems}" DisplayMemberPath="DisplayName" SelectedItem="{Binding SelectedItem}"/>
                     <Button x:Name="seperateChannelsButton" Content="Seperate Channels" Width="120" Height="20" Margin="5" Click="seperateChannelsButton_Click"/>
@@ -56,6 +56,7 @@
                                 <ComboBoxItem Content="Adobe RGB"/>
                                 <ComboBoxItem Content="Apple RGB"/>
                                 <ComboBoxItem Content="CIE RGB"/>
+                                <ComboBoxItem Content="Wide Gamut"/>
                             </ComboBox>
 
                             <TextBlock Text="Predefined illuminant" Grid.Row="1" VerticalAlignment="Center"/>
@@ -115,6 +116,8 @@
                     </Grid>
                 </GroupBox>
             </Grid>
+            <Button x:Name="saveImagesButton" Grid.Column="2" Content="Save Images" Click="saveImagesButton_Click" Width="100" Height="20" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                    Margin="5" IsEnabled="False"/>
         </Grid>
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>

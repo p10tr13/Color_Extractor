@@ -3,12 +3,11 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Numerics;
+using System.Windows.Documents;
+using System.IO;
 
 namespace GK_Proj_3
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
         public MainWindow()
@@ -63,6 +62,7 @@ namespace GK_Proj_3
                 Child1Cavas.Children.Add(imgc1);
                 Child2Cavas.Children.Add(imgc2);
                 Child3Cavas.Children.Add(imgc3);
+                saveImagesButton.IsEnabled = false;
             }
         }
 
@@ -150,6 +150,41 @@ namespace GK_Proj_3
                 case "Lab":
                     {
                         byte r, g, b;
+                        float xR, yR, xB, yB, xG, yG, xW, yW, gamma, LabL, Laba, Labb, Yn, Xn, Zn;
+                        float[,] M;
+                        string colorSpace = "default";
+                        if (!float.TryParse(xWhitePointTextBox.Text, out xW) || !float.TryParse(yWhitePointTextBox.Text, out yW))
+                            return;
+                        if (!float.TryParse(xRedTextBox.Text, out xR) || !float.TryParse(yRedTextBox.Text, out yR))
+                            return;
+                        if (!float.TryParse(xGreenTextBox.Text, out xG) || !float.TryParse(yGreenTextBox.Text, out yG))
+                            return;
+                        if (!float.TryParse(xBlueTextBox.Text, out xB) || !float.TryParse(yBlueTextBox.Text, out yB))
+                            return;
+                        if (!float.TryParse(GammaTextBox.Text, out gamma))
+                            return;
+
+                        if (ColorProfileComboBox.SelectedItem is ComboBoxItem selectedItem)
+                        {
+                            if (selectedItem.Content.ToString() != null)
+                                colorSpace = selectedItem.Content.ToString();
+                        }
+
+                        try
+                        {
+                            if (yW == 0)
+                                throw new Exception("White point y nie może być 0");
+                            M = FindRGBToXYZConversionMatrix(xR, yR, xG, yG, xB, yB, xW, yW);
+                        }
+                        catch (Exception ex) 
+                        {
+                            MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                            return;
+                        }
+
+                        Yn = 1;
+                        Xn = xW / yW;
+                        Zn = (1 - xW - yW) / yW;
 
                         for (int i = 0; i < pixels.Length; i += 4)
                         {
@@ -157,36 +192,24 @@ namespace GK_Proj_3
                             g = pixels[i + 1];
                             r = pixels[i + 2];
 
-                            float xR, yR, xB, yB, xG, yG, xW, yW, gamma, LabL, Laba, Labb;
-                            if (!float.TryParse(xWhitePointTextBox.Text, out xW) || !float.TryParse(yWhitePointTextBox.Text, out yW))
-                                return;
-                            if (yW == 0)
-                                return;
-                            if (!float.TryParse(xRedTextBox.Text, out xR) || !float.TryParse(yRedTextBox.Text,out yR))
-                                return;
-                            if (!float.TryParse(xGreenTextBox.Text, out xG) || !float.TryParse(yGreenTextBox.Text, out yG))
-                                return;
-                            if (!float.TryParse(xBlueTextBox.Text, out xB) || !float.TryParse(yBlueTextBox.Text, out yB))
-                                return;
-                            if (!float.TryParse(GammaTextBox.Text, out gamma))
-                                return;
-                            float Yn = 100, Xn = (xW / yW) * Yn, Zn = ((1 - xW - yW)/yW) * Yn;
-                            (float X, float Y, float Z) = ConvertRGBToXYZ(r, g, b, xR, yR, xG, yG, xB, yB, xW, yW);
+                            (float X, float Y, float Z) = ConvertRGBToXYZ(r, g, b, M, gamma, colorSpace);
 
-                            if (Y / Yn > 0.008856)
-                                LabL = 116f * (float)Math.Cbrt(Y / Yn) - 16f;
+                            if (Y / Yn > 0.008856f)
+                                LabL = 116.0f * MathF.Cbrt(Y / Yn) - 16.0f;
                             else
                                 LabL = 903.3f * Y / Yn;
-                            Laba = 500 * ((float)Math.Cbrt(X/ Xn) - (float)Math.Cbrt(Y / Yn));
-                            Labb = 200 * ((float)Math.Cbrt(Y/Yn) - (float)Math.Cbrt(Z/ Zn));
+                            Laba = 500.0f * (MathF.Cbrt(X / Xn) - MathF.Cbrt(Y / Yn));
+                            Labb = 200.0f * (MathF.Cbrt(Y / Yn) - MathF.Cbrt(Z / Zn));
                             Laba = Math.Clamp(Laba, -127, 127);
                             Labb = Math.Clamp(Labb, -127, 127);
-                            Laba /= 127;
-                            Labb /= 127;
-                            Laba = ((Laba + 1) / 2) * 255;
-                            Labb = ((Labb + 1) / 2) * 255;
+                            Laba /= 127.0f;
+                            Labb /= 127.0f;
+                            Laba = ((Laba + 1.0f) / 2.0f) * 255.0f;
+                            Labb = ((Labb + 1.0f) / 2.0f) * 255.0f;
+
+                            // Zapisanie pikseli
                             channel1[i] = channel1[i + 1] = channel1[i + 2] = (byte)LabL;
-                            channel2[i + 2] = (byte) Laba;
+                            channel2[i + 2] = (byte)Laba;
                             channel2[i + 1] = (byte)(255 - Laba);
                             channel2[i] = 127;
                             channel3[i + 2] = (byte)Labb;
@@ -201,6 +224,7 @@ namespace GK_Proj_3
             UpdateWB(Var.child1WB, channel1);
             UpdateWB(Var.child2WB, channel2);
             UpdateWB(Var.child3WB, channel3);
+            saveImagesButton.IsEnabled = true;
         }
 
         private void UpdateWB(WriteableBitmap wb, byte[] pixels)
@@ -210,9 +234,9 @@ namespace GK_Proj_3
             {
                 wb.WritePixels(new Int32Rect(0, 0, wb.PixelWidth, wb.PixelHeight), pixels, wb.PixelWidth * 4, 0);
             }
-            finally 
+            finally
             {
-                wb.Unlock(); 
+                wb.Unlock();
             }
         }
 
@@ -254,38 +278,45 @@ namespace GK_Proj_3
                 if (Var.illuminantDictionary.TryGetValue(name, out var values))
                 {
                     xWhitePointTextBox.Text = values[0];
-                    yWhitePointTextBox.Text= values[1];
+                    yWhitePointTextBox.Text = values[1];
                 }
             }
         }
 
-        private (float X, float Y, float Z) ConvertRGBToXYZ(float r, float g, float b, float xR, float yR, float xG, float yG, float xB, float yB, float xW, float yW)
+        private static (float X, float Y, float Z) ConvertRGBToXYZ(float r, float g, float b, float[,] M, float gamma, string colorSpace)
         {
-            float zR = 1 - xR - yR;
-            float zG = 1 - xG - yG;
-            float zB = 1 - xB - yB;
+            r /= 255.0f;
+            g /= 255.0f;
+            b /= 255.0f;
 
-            //Matrix4x4 matrix = new Matrix4x4()
-            //{
-            //    M11 = xR/yR, M12 = xG/yG, M13 = xB/yB, M14 = 0,
-            //    M21 = 1, M22 = 1, M23 = 1, M24 = 0,
-            //    M31 = zR/yR, M32 = zG/yG, M33 = zB/yB, M34 = 0,
-            //    M41 = 0, M42 = 0, M43 = 0, M44 = 1
-            //};
+            (r, g, b) = InverseGammaCorrection(r, g, b, gamma, colorSpace);
+
+            float X = r * M[0, 0] + g * M[0, 1] + b * M[0, 2];
+            float Y = r * M[1, 0] + g * M[1, 1] + b * M[1, 2];
+            float Z = r * M[2, 0] + g * M[2, 1] + b * M[2, 2];
+
+            return (X, Y, Z);
+        }
+
+        private static float[,] FindRGBToXYZConversionMatrix(float xR, float yR, float xG, float yG, float xB, float yB, float xW, float yW)
+        {
+            float zR = 1.0f - xR - yR;
+            float zG = 1.0f - xG - yG;
+            float zB = 1.0f - xB - yB;
 
             Matrix4x4 matrix = new Matrix4x4()
             {
-                M11 = xR,
-                M12 = xG,
-                M13 = xB,
+                M11 = xR / yR,
+                M12 = xG / yG,
+                M13 = xB / yB,
                 M14 = 0,
-                M21 = yR,
-                M22 = yG,
-                M23 = yB,
+                M21 = 1.0f,
+                M22 = 1.0f,
+                M23 = 1.0f,
                 M24 = 0,
-                M31 = zR,
-                M32 = zG,
-                M33 = zB,
+                M31 = zR / yR,
+                M32 = zG / yG,
+                M33 = zB / yB,
                 M34 = 0,
                 M41 = 0,
                 M42 = 0,
@@ -293,33 +324,83 @@ namespace GK_Proj_3
                 M44 = 1
             };
 
-
-
             float XW = xW / yW;
             float YW = 1.0f;
-            float ZW = (1 - xW - yW) / yW;
-            Vector3 vector = new Vector3() { X = XW, Y = YW, Z = ZW};
+            float ZW = (1.0f - xW - yW) / yW;
 
             Matrix4x4 matrixinverse;
             if (!Matrix4x4.Invert(matrix, out matrixinverse))
-                throw new Exception();
-            var S = Vector4.Transform(vector, matrixinverse);
+                throw new Exception("Wystąpił błąd przy odwracaniu macierzy przekształcenia! Podaj inne wartości.");
 
+            var SR = XW * matrixinverse.M11 + YW * matrixinverse.M12 + ZW * matrixinverse.M13;
+            var SG = XW * matrixinverse.M21 + YW * matrixinverse.M22 + ZW * matrixinverse.M23;
+            var SB = XW * matrixinverse.M31 + YW * matrixinverse.M32 + ZW * matrixinverse.M33;
 
-            var M_RGB_to_XYZ = new float[,] {
-                { matrix.M11 * S.X, matrix.M12 * S.Y, matrix.M13 * S.Z },
-                { matrix.M12 * S.X, matrix.M22 * S.Y, matrix.M23 * S.Z },
-                { matrix.M13 * S.X, matrix.M23 * S.Y, matrix.M33 * S.Z }};
+            float[,] M_RGB_to_XYZ = new float[,] {
+                { matrix.M11 * SR, matrix.M12 * SG, matrix.M13 * SB },
+                { matrix.M21 * SR, matrix.M22 * SG, matrix.M23 * SB },
+                { matrix.M31 * SR, matrix.M32 * SG, matrix.M33 * SB }};
 
-            r /= 255.0f;
-            g /= 255.0f;
-            b /= 255.0f;
+            return M_RGB_to_XYZ;
+        }
 
-            float X = r * M_RGB_to_XYZ[0, 0] + g * M_RGB_to_XYZ[0, 1] + b * M_RGB_to_XYZ[0, 2];
-            float Y = r * M_RGB_to_XYZ[1, 0] + g * M_RGB_to_XYZ[1, 1] + b * M_RGB_to_XYZ[1, 2];
-            float Z = r * M_RGB_to_XYZ[2, 0] + g * M_RGB_to_XYZ[2, 1] + b * M_RGB_to_XYZ[2, 2];
+        private static (float, float, float) InverseGammaCorrection(float r, float g, float b, float gamma, string colorSpace)
+        {
+            float nr, ng, nb;
 
-            return (X, Z, Y);
+            switch (colorSpace)
+            {
+                case "sRGB":
+                    {
+                        nr = r <= 0.04045f ? r : (float)Math.Pow((r + 0.055f) / 1.055f, gamma);
+                        ng = g <= 0.04045f ? g : (float)Math.Pow((g + 0.055f) / 1.055f, gamma);
+                        nb = b <= 0.04045f ? b : (float)Math.Pow((b + 0.055f) / 1.055f, gamma);
+                        return (nr, ng, nb);
+                    }
+                default:
+                    {
+                        return ((float)Math.Pow(r, gamma), (float)Math.Pow(g, gamma), (float)Math.Pow(b, gamma));
+                    }
+            }
+        }
+
+        private void saveImagesButton_Click(object sender, RoutedEventArgs e)
+        {
+            string directoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Color_Extractor");
+            if (!Directory.Exists(directoryPath))
+            {
+                Directory.CreateDirectory(directoryPath);
+            }
+
+            string fName1 = "img1_", fName2 = "img2_", fName3 = "img3_";
+            
+            MainViewModel mVM = this.DataContext as MainViewModel;
+            if (mVM != null && mVM.SelectedItem != null) 
+            {
+                fName1 += mVM.SelectedItem.Label1Value + "_";
+                fName2 += mVM.SelectedItem.Label2Value + "_";
+                fName3 += mVM.SelectedItem.Label3Value + "_";
+            }
+
+            string now = DateTime.Now.ToString("hh_mm_ss") + ".png";
+            fName1 += now;
+            fName2 += now;
+            fName3 += now;
+
+            SaveBitmap(Var.child1WB, Path.Combine(directoryPath, fName1));
+            SaveBitmap(Var.child2WB, Path.Combine(directoryPath, fName2));
+            SaveBitmap(Var.child3WB, Path.Combine(directoryPath, fName3));
+        }
+
+        private static void SaveBitmap(WriteableBitmap bitmap, string filePath)
+        {
+            using (FileStream stream = new FileStream(filePath, FileMode.Create))
+            {
+                PngBitmapEncoder encoder = new PngBitmapEncoder();
+                encoder.Frames.Add(BitmapFrame.Create(bitmap));
+
+                encoder.Save(stream);
+            }
         }
     }
 }
