@@ -29,7 +29,7 @@
                     <RowDefinition Height="5*"/>
                 </Grid.RowDefinitions>
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Grid.Row="0">
-                    <Button x:Name="toGreyScaleButton" Content="To Greyscale" Width="120" Height="20" Margin="5" IsEnabled="False"/>
+                    <Button x:Name="toGreyScaleButton" Content="Create Image" Width="120" Height="20" Margin="5" Click="CreateImageButton_Click"/>
                     <Button x:Name="loadImageButton" Content="Load Image" Width="120" Height="20" Margin="5" Click="loadImageButton_Click"/>
                     <ComboBox x:Name="ModelComboBox" Margin="5" ItemsSource="{Binding ComboBoxItems}" DisplayMemberPath="DisplayName" SelectedItem="{Binding SelectedItem}"/>
                     <Button x:Name="seperateChannelsButton" Content="Seperate Channels" Width="120" Height="20" Margin="5" Click="seperateChannelsButton_Click"/>

@@ -66,6 +66,106 @@ namespace GK_Proj_3
             }
         }
 
+        private void CreateImageButton_Click(object sender, RoutedEventArgs e)
+        {
+            WriteableBitmap wBM = new WriteableBitmap((int)MainCanvas.ActualHeight, (int)MainCanvas.ActualWidth, 96, 96, PixelFormats.Bgra32, null);
+
+            int width = wBM.PixelWidth;
+            int height = wBM.PixelHeight;
+            byte[] pixels = new byte[width * height * 4];
+
+            int s = 10;
+            for (int j = 0; j < 6; j++)
+            {
+                int ns = s * j;
+                for (int i = 0; i < pixels.Length; i += 4)
+                {
+                    int ind = i / 4;
+                    int row = ind / width;
+                    int col = ind % width;
+
+                    if (col + ns < width && col - ns > 0 && row + ns < height && row - ns > 0)
+                    {
+                        if (j % 2 == 0)
+                        {
+                            pixels[i] = 0;
+                            pixels[i + 1] = 0;
+                            pixels[i + 2] = 0;
+                            pixels[i + 3] = 255;
+                        }
+                        else
+                        {
+                            pixels[i] = 255;
+                            pixels[i + 1] = 255;
+                            pixels[i + 2] = 255;
+                            pixels[i + 3] = 255;
+                        }
+                    }
+                }
+            }
+
+            int x = width / 2;
+            int y = height / 2;
+            int r =  100;
+            Point m = new Point(x, y);
+
+            for (int i = 0; i < pixels.Length; i += 4)
+            {
+                int ind = i / 4;
+                int row = ind / width;
+                int col = ind % width;
+                Point p = new Point(col, row);
+                double len = (m - p).Length;
+                if (len <= r)
+                {
+                    double S = len / r;
+                    double V = 1;
+                    double dX = m.X - p.X;
+                    double dY = m.Y - p.Y;
+                    double H = Math.Atan2(dY, dX) * (180.0 / Math.PI);
+                    if (H < 0)
+                        H += 360;
+                    (pixels[i + 2], pixels[i + 1], pixels[i]) = HSVToRGB(H, S, V);
+
+                    pixels[i + 3] = 255;
+                }
+            }
+
+            UpdateWB(wBM, pixels);
+
+            Var.imagebitmap = ConvertWriteableBitmapToBitmapImage(wBM);
+            var img = new Image()
+            {
+                Source = Var.imagebitmap,
+                Stretch = Stretch.Uniform,
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch
+            };
+            img.Height = MainCanvas.ActualHeight;
+            img.Width = MainCanvas.ActualWidth;
+            MainCanvas.Children.Clear();
+            MainCanvas.Children.Add(img);
+            Child1Cavas.Children.Clear();
+            Child2Cavas.Children.Clear();
+            Child3Cavas.Children.Clear();
+            Var.child1WB = new WriteableBitmap(Var.imagebitmap.PixelWidth, Var.imagebitmap.PixelHeight, 96, 96, PixelFormats.Bgra32, null);
+            Var.child2WB = new WriteableBitmap(Var.imagebitmap.PixelWidth, Var.imagebitmap.PixelHeight, 96, 96, PixelFormats.Bgra32, null);
+            Var.child3WB = new WriteableBitmap(Var.imagebitmap.PixelWidth, Var.imagebitmap.PixelHeight, 96, 96, PixelFormats.Bgra32, null);
+            var imgc1 = new Image() { Source = Var.child1WB, Stretch = Stretch.Uniform, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
+            imgc1.Height = Child1Cavas.ActualHeight;
+            imgc1.Width = Child1Cavas.ActualWidth;
+            var imgc2 = new Image() { Source = Var.child2WB, Stretch = Stretch.Uniform, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
+            imgc2.Height = Child2Cavas.ActualHeight;
+            imgc2.Width = Child2Cavas.ActualWidth;
+            var imgc3 = new Image() { Source = Var.child3WB, Stretch = Stretch.Uniform, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
+            imgc3.Height = Child3Cavas.ActualHeight;
+            imgc3.Width = Child3Cavas.ActualWidth;
+            Child1Cavas.Children.Add(imgc1);
+            Child2Cavas.Children.Add(imgc2);
+            Child3Cavas.Children.Add(imgc3);
+            saveImagesButton.IsEnabled = false;
+        }
+
         private void seperateChannelsButton_Click(object sender, RoutedEventArgs e)
         {
             if (ModelComboBox.SelectedItem == null || Var.imagebitmap == null)
@@ -120,29 +220,34 @@ namespace GK_Proj_3
                             g = pixels[i + 1];
                             r = pixels[i + 2];
 
-                            double Xmax = Math.Max(r, Math.Max(g, b));
-                            double Xmin = Math.Min(r, Math.Min(g, b));
-                            double C = Xmax - Xmin;
-                            double H, S, V = Xmax;
+                            double rn = (double)r / 255, gn = (double)g / 255, bn = (double)b / 255;
+
+                            double Xmax = Math.Max(rn, Math.Max(gn, bn));
+                            double Xmin = Math.Min(rn, Math.Min(gn, bn));
+                            double H, S, V = Xmax, C = Xmax - Xmin;
 
                             if (V != 0)
                                 S = C / Xmax;
                             else
                                 S = 0;
 
-                            if (C == 0)
-                                H = 0;
-                            else if (V == r)
-                                H = 60 * (((g - b) / C) % 6);
-                            else if (V == g)
-                                H = 60 * ((b - r) / C + 2);
-                            else
-                                H = 60 * ((r - g) / C + 4);
+                            H = 0;
+                            if (C != 0)
+                            {
+                                if (V == rn)
+                                    H = 60 * (((gn - bn) / C) % 6);
+                                else if (V == gn)
+                                    H = 60 * (((bn - rn) / C) + 2);
+                                else if (V == bn)
+                                    H = 60 * (((rn - gn) / C) + 4);
+                            }
 
-                            //Option 1
+                            if (H < 0)
+                                H += 360;
+
                             channel1[i] = channel1[i + 1] = channel1[i + 2] = (byte)(H / 360 * 255);
                             channel2[i] = channel2[i + 1] = channel2[i + 2] = (byte)(S * 255);
-                            channel3[i] = channel3[i + 1] = channel3[i + 2] = (byte)V;
+                            channel3[i] = channel3[i + 1] = channel3[i + 2] = (byte)(V * 255);
                             channel1[i + 3] = channel2[i + 3] = channel3[i + 3] = 255;
                         }
                     }
@@ -206,6 +311,9 @@ namespace GK_Proj_3
                             Labb /= 127.0f;
                             Laba = ((Laba + 1.0f) / 2.0f) * 255.0f;
                             Labb = ((Labb + 1.0f) / 2.0f) * 255.0f;
+
+                            LabL = Math.Clamp(LabL, 0, 100);
+                            LabL *= 2.55f;
 
                             // Zapisanie pikseli
                             channel1[i] = channel1[i + 1] = channel1[i + 2] = (byte)LabL;
@@ -401,6 +509,69 @@ namespace GK_Proj_3
 
                 encoder.Save(stream);
             }
+        }
+
+        private static BitmapImage ConvertWriteableBitmapToBitmapImage(WriteableBitmap wbm)
+        {
+            BitmapImage bmImage = new BitmapImage();
+            using (MemoryStream stream = new MemoryStream())
+            {
+                PngBitmapEncoder encoder = new PngBitmapEncoder();
+                encoder.Frames.Add(BitmapFrame.Create(wbm));
+                encoder.Save(stream);
+                bmImage.BeginInit();
+                bmImage.CacheOption = BitmapCacheOption.OnLoad;
+                bmImage.StreamSource = stream;
+                bmImage.EndInit();
+            }
+            return bmImage;
+        }
+
+        private static (byte, byte, byte)HSVToRGB(double h, double s, double v)
+        {
+            h = Math.Clamp(h, 0, 360);
+            s = Math.Clamp(s, 0, 1);
+            v = Math.Clamp(v, 0, 1);
+
+            if (s == 0)
+                return ((byte)(v * 255), (byte)(v * 255), (byte)(v * 255));
+
+            double c = v * s;
+            double x = c * (1 - Math.Abs((h / 60) % 2 - 1));
+            double m = v - c;
+
+            double rp, gp, bp;
+
+            if (h < 60)
+            {
+                rp = c; gp = x; bp = 0;
+            }
+            else if (h < 120)
+            {
+                rp = x; gp = c; bp = 0;
+            }
+            else if (h < 180)
+            {
+                rp = 0; gp = c; bp = x;
+            }
+            else if (h < 240)
+            {
+                rp = 0; gp = x; bp = c;
+            }
+            else if (h < 300)
+            {
+                rp = x; gp = 0; bp = c;
+            }
+            else
+            {
+                rp = c; gp = 0; bp = x;
+            }
+
+            byte r = (byte)((rp + m) * 255);
+            byte g = (byte)((gp + m) * 255);
+            byte b = (byte)((bp + m) * 255);
+
+            return (r, g, b);
         }
     }
 }
