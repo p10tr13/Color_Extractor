@@ -3,7 +3,6 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Numerics;
-using System.Windows.Documents;
 using System.IO;
 
 namespace GK_Proj_3
@@ -106,7 +105,7 @@ namespace GK_Proj_3
 
             int x = width / 2;
             int y = height / 2;
-            int r =  100;
+            int r = 100;
             Point m = new Point(x, y);
 
             for (int i = 0; i < pixels.Length; i += 4)
@@ -281,7 +280,7 @@ namespace GK_Proj_3
                                 throw new Exception("White point y nie może być 0");
                             M = FindRGBToXYZConversionMatrix(xR, yR, xG, yG, xB, yB, xW, yW);
                         }
-                        catch (Exception ex) 
+                        catch (Exception ex)
                         {
                             MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                             return;
@@ -481,9 +480,9 @@ namespace GK_Proj_3
             }
 
             string fName1 = "img1_", fName2 = "img2_", fName3 = "img3_";
-            
+
             MainViewModel mVM = this.DataContext as MainViewModel;
-            if (mVM != null && mVM.SelectedItem != null) 
+            if (mVM != null && mVM.SelectedItem != null)
             {
                 fName1 += mVM.SelectedItem.Label1Value + "_";
                 fName2 += mVM.SelectedItem.Label2Value + "_";
@@ -527,7 +526,7 @@ namespace GK_Proj_3
             return bmImage;
         }
 
-        private static (byte, byte, byte)HSVToRGB(double h, double s, double v)
+        private static (byte, byte, byte) HSVToRGB(double h, double s, double v)
         {
             h = Math.Clamp(h, 0, 360);
             s = Math.Clamp(s, 0, 1);
